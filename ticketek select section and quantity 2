@@ -12,9 +12,11 @@
 
 (function() {
 
+//要改reservePriority，唔洗揀張數，自動揀最多張
+
     var reservePriority = ['C Reserve Seating', 'B Reserve Seating', 'B Reserve Aisle Seating', 'A Reserve Seating', 'A Reserve Aisle Seating', 'General Admission Standing'];
 
-//唔洗揀張數，自動揀最多張
+
 
 
 
