@@ -1,0 +1,105 @@
+// ==UserScript==
+// @name         ticketek select place and date2
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  My Tampermonkey script
+// @match        https://premier.ticketek.com.au/shows/show.aspx?sh=*
+// @match        https://hotshow4.ticketek.com.au/shows/show.aspx?sh=*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+
+    //要跟大細楷寫
+    var want_venue = "VIC";
+    var want_date = "09";
+
+    function select_venue() {
+        var observer = new MutationObserver(function(mutationsList) {
+            for (var mutation of mutationsList) {
+                if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                    var venue_item = document.getElementById("v");
+                    console.log("-2");
+                    console.log("-1");
+                    for (var i = 0; i < venue_item.options.length; i++) {
+                        console.log("000");
+                        if (venue_item.options[i].textContent.includes(want_venue)) {
+                            console.log("111");
+                            venue_item.selectedIndex = i;
+                            var event = new Event("change", { bubbles: true, cancelable: true });
+                            venue_item.dispatchEvent(event);
+                            observer.disconnect();
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+
+        observer.observe(document, { childList: true, subtree: true });
+    }
+
+    function select_date() {
+
+        var observer = new MutationObserver(function(mutationsList) {
+            for (var mutation of mutationsList) {
+                if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                    var date_item = document.getElementById("p");
+                    console.log("222");
+                    console.log("333");
+                    for (var i = 0; i < date_item.options.length; i++) {
+                        console.log("444");
+                        var option = date_item.options[i];
+                        var dateText = option.textContent.trim();
+                        if (dateText.includes(want_date)) {
+                            console.log("555");
+
+
+
+                            //專門為左有相同日期但係有一個係正常一個係買package，手動設定的
+                            //option = date_item.options[i+1];
+
+
+
+
+                            option.selected = true;
+                            var changeEvent = new Event("change");
+                            date_item.dispatchEvent(changeEvent);
+                            observer.disconnect();
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+        observer.observe(document, { childList: true, subtree: true });
+    }
+
+
+    function find_ticket() {
+        var observer = new MutationObserver(function(mutationsList) {
+            for (var mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    var buttonElement = document.getElementById('ctl00_ctl00_uiBodyMain_uiBodyMain_uiPerfSelector_uiBuyNowButton');
+                    if (buttonElement) {
+                        buttonElement.click();
+                    } else {
+                        console.error('Button element not found.');
+                    }
+                    observer.disconnect();
+                    break;
+                }
+            }
+        });
+        observer.observe(document, { childList: true, subtree: true });
+    }
+
+    setTimeout(select_venue, 1000);
+    setTimeout(select_date, 5000);
+    setTimeout(find_ticket, 10000);
+
+    setTimeout(select_venue, 20000);
+    setTimeout(select_date, 30000);
+    setTimeout(find_ticket, 40000);
+})();
