@@ -1,12 +1,12 @@
 // ==UserScript==
-// @name         ticketek select section and quantity 4
+// @name         ticketek select section and quantity 3
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  My Tampermonkey script
 // @match        https://premier.ticketek.com.au/events/*
 // @match        https://hotshow4.ticketek.com.au/events/*/venues/*/performances/*/tickets
-// @updateURL    https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20section%20and%20quantity%204
-// @downloadURL  https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20section%20and%20quantity%204
+// @updateURL    https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20section%20and%20quantity%203
+// @downloadURL  https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20section%20and%20quantity%203
 // @grant        none
 // ==/UserScript==
 
