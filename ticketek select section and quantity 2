@@ -1,0 +1,132 @@
+// ==UserScript==
+// @name         ticketek select section and quantity 2
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  My Tampermonkey script
+// @match        https://premier.ticketek.com.au/events/*
+// @match        https://hotshow4.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @grant        none
+// ==/UserScript==
+
+(function() {
+
+    function wait_time(){
+        console.log("wait");
+    }
+
+var reservePriority = ['C Reserve Seating', 'B Reserve Seating', 'B Reserve Aisle Seating', 'A Reserve Seating', 'A Reserve Aisle Seating', 'General Admission Standing'];
+    var currentIndex = 0; // Track the current index in the reservePriority array
+
+    function select_section() {
+        // Find all the seat area elements
+        var seatAreas = document.querySelectorAll('li.ng-scope');
+
+        // Get the current reserve type
+        var reserveType = reservePriority[currentIndex];
+        console.log(reserveType);
+
+        // Iterate through each seat area element
+        for (var j = 0; j < seatAreas.length; j++) {
+            var seatArea = seatAreas[j];
+            var nameContainer = seatArea.querySelector('.name.brazeContentContainer');
+            console.log(nameContainer);
+
+            // Check if the seat area matches the reserve type and meets the conditions
+            if (nameContainer && nameContainer.innerText === reserveType &&
+                !seatArea.classList.contains('unavailable') &&
+                !nameContainer.innerText.includes('Any price') &&
+                !nameContainer.innerText.includes('Limited availability')) {
+
+                // Simulate a click event on the seat area
+                seatArea.click();
+
+                // Increment the index or go back to the first index if it is the last reserve type
+                currentIndex = (currentIndex + 1) % reservePriority.length;
+
+                return; // Exit the script after selecting the seat area
+            }
+        }
+    }
+
+    function select_quantity() {
+        let quan = document.querySelector('select.shortSelect.borInput.ng-pristine.ng-untouched.ng-valid[data-ng-change="ticketInputOnChange(priceType)"]');
+        if (quan) {
+            let quan_option = quan.options;
+            let max_quan_option_index = quan_option.length - 1;
+
+            quan_option[max_quan_option_index].selected = true;
+
+            // Trigger a change event to simulate user interaction
+            var changeEvent = new Event('change', { bubbles: true });
+            quan.dispatchEvent(changeEvent);
+        }
+    }
+
+    function select_quantity2() {
+        let quan = document.querySelector('select.shortSelect.borInput.ng-pristine.ng-untouched.ng-valid[data-ng-change="ticketInputOnChange(priceType)"]');
+        if (quan) {
+            let quan_option = quan.options;
+            let max_quan_option_index = quan_option.length - 1;
+
+            quan_option[max_quan_option_index].selected = true;
+
+            // Trigger a change event to simulate user interaction
+            var changeEvent = new Event('change', { bubbles: true });
+            quan.dispatchEvent(changeEvent);
+
+            setTimeout(click_next, 1000);
+
+            function choose_less_ticket(){
+                let last_even_index = quan_option.length - 3;
+                quan_option[last_even_index].selected = true;
+                quan.dispatchEvent(changeEvent);
+
+                setTimeout(click_next, 1000);
+
+            }
+            setTimeout(choose_less_ticket, 3000);
+        }
+    }
+
+
+    function click_next(){
+
+        var next_btn = document.getElementById("ticket-selection-page-next-button");
+
+        // Check if the button element exists before attempting to click it
+        if (next_btn) {
+            // Click the button
+            next_btn.click();
+        } else {
+            console.log("Button element not found.");
+        }
+
+    }
+
+    //it will back the the choose section page
+    function no_ticket_change_section(){
+        let change_btn = document.querySelector('p.resetSelectTkt');
+        if (change_btn){
+
+        change_btn.click();
+
+        }
+
+    }
+
+
+
+    //setTimeout(select_section, 5000);
+    //setTimeout(select_quantity, 10000);
+    //setTimeout(click_next, 15000);
+
+    function group(){
+        setTimeout(select_section, 2000);
+        setTimeout(select_quantity2, 5000);
+        
+        setTimeout(no_ticket_change_section, 12000);
+    }
+
+    setInterval(group, 16000);
+
+})();
