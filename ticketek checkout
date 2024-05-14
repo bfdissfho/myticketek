@@ -4,6 +4,8 @@
 // @version      1.0
 // @description  My Tampermonkey script
 // @match        https://premier.ticketek.com.au/events/*/seatmap
+// @updateURL    https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20checkout
+// @downloadURL  https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20checkout
 // @grant        none
 // ==/UserScript==
 
