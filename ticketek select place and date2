@@ -5,6 +5,8 @@
 // @description  My Tampermonkey script
 // @match        https://premier.ticketek.com.au/shows/show.aspx?sh=*
 // @match        https://hotshow4.ticketek.com.au/shows/show.aspx?sh=*
+// @updateURL    https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20place%20and%20date2
+// @downloadURL  https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20place%20and%20date2
 // @grant        none
 // ==/UserScript==
 
