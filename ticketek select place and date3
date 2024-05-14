@@ -12,7 +12,7 @@
 
 (function() {
 
-    //要跟大細楷寫
+    //要改want_venue和want_date，要跟大細楷寫
     var want_venue = "VIC";
     var want_date = "10";
 
