@@ -12,11 +12,16 @@
 
 (function() {
 
+    var reservePriority = ['C Reserve Seating', 'B Reserve Seating', 'B Reserve Aisle Seating', 'A Reserve Seating', 'A Reserve Aisle Seating', 'General Admission Standing'];
+
+//唔洗揀張數，自動揀最多張
+
+
+
     function wait_time(){
         console.log("wait");
     }
 
-var reservePriority = ['C Reserve Seating', 'B Reserve Seating', 'B Reserve Aisle Seating', 'A Reserve Seating', 'A Reserve Aisle Seating', 'General Admission Standing'];
     var currentIndex = 0; // Track the current index in the reservePriority array
 
     function select_section() {
