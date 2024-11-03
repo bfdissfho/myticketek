@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ticketek select section and quantity 2
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      2024.11.04
 // @description  My Tampermonkey script
 // @match        https://premier.ticketek.com.au/events/*
 // @match        https://hotshow1.ticketek.com.au/events/*/venues/*/performances/*/tickets
@@ -19,7 +19,7 @@
 
 //要改reservePriority，唔洗揀張數，自動揀最多張
 
-    var reservePriority = ['General Admission 2', 'General Admission 1', 'D Reserve Seating', 'D Reserve Aisle Seating', 'C Reserve Seating', 'C Reserve Aisle Seating'];
+    var reservePriority = ['General Admission 2', 'General Admission 1', 'D Reserve Seating', 'D Reserve Aisle Seating', 'C Reserve Seating', 'C Reserve Aisle Seating', 'B Reserve Seating', 'B Reserve Aisle Seating', 'A Reserve Seating', 'A Reserve Aisle Seating'];
 
 
 
