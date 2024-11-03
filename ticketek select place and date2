@@ -18,8 +18,8 @@
 (function() {
 
     //要改want_venue和want_date，要跟大細楷寫
-    var want_venue = "VIC";
-    var want_date = "09";
+    var want_venue = "QLD";
+    var want_date = "Main";
 
     function select_venue() {
         var observer = new MutationObserver(function(mutationsList) {
