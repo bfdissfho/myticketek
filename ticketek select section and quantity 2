@@ -19,7 +19,7 @@
 
 //要改reservePriority，唔洗揀張數，自動揀最多張
 
-    var reservePriority = ['C Reserve Seating', 'B Reserve Seating', 'B Reserve Aisle Seating', 'A Reserve Seating', 'A Reserve Aisle Seating', 'General Admission Standing'];
+    var reservePriority = ['General Admission 2', 'General Admission 1', 'D Reserve Seating', 'D Reserve Aisle Seating', 'C Reserve Seating', 'C Reserve Aisle Seating'];
 
 
 
