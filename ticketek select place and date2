@@ -3,13 +3,13 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  My Tampermonkey script
-// @match        https://premier.ticketek.com.au/shows/show.aspx?sh=*
-// @match        https://hotshow1.ticketek.com.au/events/*/venues/*/performances/*/tickets
-// @match        https://hotshow2.ticketek.com.au/events/*/venues/*/performances/*/tickets
-// @match        https://hotshow3.ticketek.com.au/events/*/venues/*/performances/*/tickets
-// @match        https://hotshow4.ticketek.com.au/events/*/venues/*/performances/*/tickets
-// @match        https://hotshow5.ticketek.com.au/events/*/venues/*/performances/*/tickets
-// @match        https://hotshow6.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @match        https://premier.ticketek.com.au/shows/*
+// @match        https://hotshow1.ticketek.com.au/shows/*
+// @match        https://hotshow2.ticketek.com.au/shows/*
+// @match        https://hotshow3.ticketek.com.au/shows/*
+// @match        https://hotshow4.ticketek.com.au/shows/*
+// @match        https://hotshow5.ticketek.com.au/shows/*
+// @match        https://hotshow6.ticketek.com.au/shows/*
 // @updateURL    https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20place%20and%20date2
 // @downloadURL  https://raw.githubusercontent.com/bfdissfho/myticketek/main/ticketek%20select%20place%20and%20date2
 // @grant        none
