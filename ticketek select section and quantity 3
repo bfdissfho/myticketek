@@ -77,7 +77,7 @@
     }
 
     function select_quantity2() {
-        let quan = document.querySelector('select.shortSelect.borInput.ng-pristine.ng-untouched.ng-valid[data-ng-change="ticketInputOnChange(priceType)"]');
+        let quan = document.querySelector('.selectTktBlock.ng-scope:not(.ng-hide) select.shortSelect.borInput.ng-pristine.ng-untouched.ng-valid[data-ng-change="ticketInputOnChange(priceType)"]');
         if (quan) {
             let quan_option = quan.options;
             let max_quan_option_index = quan_option.length - 1;
