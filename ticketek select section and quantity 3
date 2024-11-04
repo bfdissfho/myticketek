@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ticketek select section and quantity 3
 // @namespace    http://tampermonkey.net/
-// @version      2024.11.04
+// @version      2024.11.05
 // @description  My Tampermonkey script
 // @match        https://premier.ticketek.com.au/events/*
 // @match        https://hotshow1.ticketek.com.au/events/*/venues/*/performances/*/tickets
