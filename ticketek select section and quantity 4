@@ -1,0 +1,393 @@
+// ==UserScript==
+// @name         ticketek select section and quantity 4
+// @namespace    http://tampermonkey.net/
+// @version      2025-07-05
+// @description  try to take over the world!
+// @author       You
+// @match        https://premier.ticketek.com.au/events/*
+// @match        https://hotshow1.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @match        https://hotshow2.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @match        https://hotshow3.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @match        https://hotshow4.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @match        https://hotshow5.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @match        https://hotshow6.ticketek.com.au/events/*/venues/*/performances/*/tickets
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=ticketek.com.au
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // *** 配置区 ***
+    const presale_code = ""; // 在这里输入你的预售码。如果留空("")，脚本会尝试点击“Find public tickets”。
+
+    const want_sections = [
+        ['105', '103', '104', 'abc'], // 第 0 组 ID
+        ['111', 'VIP Package', 'Reserved Seating'], // 第 1 组 ID
+        // 你可以根据需要添加更多组，例如：
+        ['111', '115', '116'], // 第 2 组 ID
+        ['36', '37', '40'],
+    ];
+    // *** 配置区结束 ***
+
+    // 全局变量：用于追踪当前尝试的 want_sections 组索引
+    let currentSectionGroupIndex = 0;
+
+    // 用于存储各个 setInterval ID，以便管理和清理
+    let checkPaymentButtonInterval = null;
+    let checkMapWrapperInterval = null;
+    let checkPresalePageStatusInterval = null; // New interval for presale/public ticket page status
+
+    // Flag to ensure initial setup (presale/public ticket) runs only once successfully
+    let initialSetupDone = false;
+
+    /**
+     * Helper to clear all active intervals.
+     */
+    function stopAllChecks() {
+        if (checkPaymentButtonInterval) {
+            clearInterval(checkPaymentButtonInterval);
+            checkPaymentButtonInterval = null;
+        }
+        if (checkMapWrapperInterval) {
+            clearInterval(checkMapWrapperInterval);
+            checkMapWrapperInterval = null;
+        }
+        if (checkPresalePageStatusInterval) {
+            clearInterval(checkPresalePageStatusInterval);
+            checkPresalePageStatusInterval = null;
+        }
+        console.log("所有定时检查已停止。");
+    }
+
+    /**
+     * 根据 ID 查找对应的 <path> 元素。
+     * @param {string} id - 要查找的元素的 ID (来自 <title>)。
+     * @returns {HTMLElement | null} 找到的 <path> 元素，如果未找到则为 null。
+     */
+    function findPathElementById(id) {
+        const pathElements = document.querySelectorAll('path');
+        for (const pathEl of pathElements) {
+            const titleEl = pathEl.querySelector('title');
+            if (titleEl && titleEl.textContent === id) {
+                return pathEl;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 检查给定 ID 数组中的所有 SVG 元素是否都具有 data-active="1" 属性。
+     * @param {string[]} sectionIds - 要检查的 SVG 元素 ID 数组。
+     * @returns {boolean} 如果所有元素都活跃（且存在），则返回 true；否则返回 false。
+     */
+    function checkSectionActive(sectionIds) {
+        for (const id of sectionIds) {
+            const foundElement = findPathElementById(id);
+            if (!foundElement || foundElement.getAttribute('data-active') !== '1') {
+                return false; // 找到一个不活跃的元素或元素未找到
+            }
+        }
+        return true; // 此部分中的所有元素都处于活跃状态
+    }
+
+    /**
+     * 从数组中随机获取一个元素。
+     * @param {Array} arr - 任意类型的数组。
+     * @returns {*} 数组中的一个随机元素。
+     */
+    function getRandomElement(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    /**
+     * 模拟对给定元素的点击事件。
+     * @param {HTMLElement} element - 要点击的 DOM 元素。
+     */
+    function simulateClick(element) {
+        if (!element) return;
+        const event = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+        });
+        element.dispatchEvent(event);
+        const titleElement = element.querySelector('title');
+        console.log(`已点击元素，标题为: ${titleElement ? titleElement.textContent : '无标题'}`);
+    }
+
+    /**
+     * 点击“下一步”按钮。
+     * 并在点击后检查是否有“无票”或“重新选择”按钮出现。
+     */
+    function click_next() {
+        const next_btn = document.getElementById("ticket-selection-page-next-button");
+        if (next_btn) {
+            next_btn.click();
+            console.log("已点击 '下一步' 按钮。");
+            // 在点击“下一步”后，延迟检查是否有无票/更改区域按钮出现
+            setTimeout(no_ticket_change_section, 1500); // 1.5 秒延迟，等待页面响应
+        } else {
+            console.log("未找到 '下一步' 按钮元素。");
+            // 如果“下一步”按钮也没找到，尝试触发无票/切换组逻辑
+            setTimeout(no_ticket_change_section, 500);
+        }
+    }
+
+    /**
+     * 选择票量并触发点击“下一步”的逻辑。
+     */
+    function select_quantity2() {
+        console.log("开始执行票量选择逻辑...");
+        // 查找票量选择下拉菜单
+        let quan = document.querySelector('select.shortSelect.borInput.ng-pristine.ng-untouched.ng-valid[data-ng-change="ticketInputOnChange(priceType)"]');
+
+        if (quan) {
+            let quan_option = quan.options;
+            let max_quan_option_index = quan_option.length - 1; // 最后一个选项的索引
+
+            // 1. 选择最大票量 (最后一个选项)
+            if (max_quan_option_index >= 0) {
+                quan_option[max_quan_option_index].selected = true;
+                // Trigger change event to simulate user interaction
+                const changeEvent = new Event('change', { bubbles: true });
+                quan.dispatchEvent(changeEvent);
+                console.log(`已选择最大票量: ${quan_option[max_quan_option_index].value}`);
+                // After selecting max quantity, click 'Next' after 1 second
+                setTimeout(click_next, 1000);
+            } else {
+                console.log("票量选择下拉菜单中没有可选选项。");
+                // If no options, try to trigger no_ticket_change_section
+                setTimeout(no_ticket_change_section, 500);
+            }
+
+            // 2. Try to select the third to last quantity after 3 seconds (if exists)
+            setTimeout(() => {
+                let last_even_index = quan_option.length - 3;
+                if (last_even_index >= 0) {
+                    quan_option[last_even_index].selected = true;
+                    // Trigger change event
+                    const changeEvent = new Event('change', { bubbles: true });
+                    quan.dispatchEvent(changeEvent);
+                    console.log(`3秒后，已尝试选择倒数第三个票量: ${quan_option[last_even_index].value}`);
+                    // After selecting third to last, click 'Next' after 1 second
+                    setTimeout(click_next, 1000);
+                } else {
+                    console.log("票量选择下拉菜单中没有倒数第三个可选选项。");
+                }
+            }, 3000); // Delay for 3 seconds
+        } else {
+            console.log("未找到票量选择下拉菜单。");
+            // If quantity dropdown not found, try to trigger no_ticket_change_section
+            setTimeout(no_ticket_change_section, 500);
+        }
+    }
+
+    /**
+     * After clicking 'Next', check if there's a 'no ticket'/'change section' button.
+     * If yes, try to switch to the next want_sections group and restart the process.
+     */
+    function no_ticket_change_section() {
+        let change_btn = document.querySelector('p.resetSelectTkt');
+        if (change_btn) {
+            console.log("检测到 '无票/更改区域' 按钮，尝试切换到下一组...");
+            // Increment group index
+            currentSectionGroupIndex++;
+
+            // If all groups have been iterated, decide whether to loop back to the first or stop
+            if (currentSectionGroupIndex >= want_sections.length) {
+                console.log("所有可用的 section 组都已尝试完毕。脚本停止。");
+                // currentSectionGroupIndex = 0; // Uncomment to loop back to the first group
+                stopAllChecks(); // Ensure all checks are stopped
+                return; // Stop script execution
+            }
+
+            // Re-initiate mapWrapper check
+            console.log(`切换到第 ${currentSectionGroupIndex + 1} 组，重新启动流程。`);
+            startMapWrapperCheck();
+        } else {
+            console.log("未检测到 '无票/更改区域' 按钮。");
+            // If no reset button, it means we might have successfully proceeded.
+            // No action needed here, as the script proceeds to the next phase (payment if any)
+        }
+    }
+
+    /**
+     * Handles the presale code input or "Find public tickets" button click.
+     * This function is called AFTER mapWrapper is found.
+     * @param {string} code - Presale code. If empty, clicks "Find public tickets".
+     */
+    function input_presale_code_logic(code) {
+        if (initialSetupDone) {
+            console.log("预售码/公开售票处理已完成，跳过重复执行。");
+            select_section(); // Directly proceed to selecting the section
+            return;
+        }
+
+        console.log("开始处理预售码/公开售票逻辑...");
+        let publicTicketButton = document.querySelector("button[data-ng-click='stopPasswordCapturing()']");
+        let inputElement = document.getElementById("password-input");
+        let unlockButtonElement = document.querySelector("button[data-ng-click='submitPasswords()']");
+
+        // Prioritize finding the input or unlock button if code is provided
+        if (code !== "") {
+            if (inputElement && unlockButtonElement && !unlockButtonElement.disabled) {
+                inputElement.value = code;
+                console.log("已输入预售码。");
+                unlockButtonElement.click();
+                console.log("已点击 'Unlock tickets' 按钮。");
+                initialSetupDone = true; // Mark initial setup as done
+                setTimeout(select_section, 1000); // After clicking unlock, wait then proceed to section selection
+                return;
+            } else if (inputElement && !unlockButtonElement) { // Input exists but unlock button doesn't (yet)
+                console.log("预售码输入框存在，但解锁按钮未找到或未加载，等待解锁按钮...");
+                // If input exists, assume page is in presale input state, wait for unlock button
+                // or just proceed to section selection if it's expected to appear later
+                setTimeout(select_section, 1000); // Assume it progresses to mapWrapper soon
+                return;
+            }
+        }
+
+        // If no code, or code logic failed, try public ticket button
+        if (publicTicketButton && publicTicketButton.offsetParent !== null) {
+            publicTicketButton.click();
+            console.log("已点击 'Find public tickets' 按钮。");
+            initialSetupDone = true; // Mark initial setup as done
+            setTimeout(select_section, 1000); // After clicking public tickets, wait then proceed
+            return;
+        }
+
+        // If none of the above elements are found, it means we've likely passed this stage
+        // or this stage doesn't exist. Proceed to the next logical step.
+        console.log("未找到预售码输入框或 'Find public tickets' 按钮，可能已跳过预售码阶段。直接启动 SVG 区域选择。");
+        initialSetupDone = true; // Mark initial setup as done
+        select_section(); // Directly proceed to selecting the section
+    }
+
+    /**
+     * Executes the main SVG element selection and clicking logic.
+     * This is called after mapWrapper is found and presale/public ticket handled.
+     */
+    function select_section() {
+        console.log('开始执行 Tampermonkey 脚本的主流程，当前组索引:', currentSectionGroupIndex);
+
+        const currentTargetGroup = want_sections[currentSectionGroupIndex];
+
+        if (!currentTargetGroup) {
+            console.log("没有更多要处理的 section 组了。脚本停止。");
+            stopAllChecks();
+            return; // No more groups, stop execution
+        }
+
+        let targetSectionToClick = null;
+
+        if (checkSectionActive(currentTargetGroup)) {
+            targetSectionToClick = currentTargetGroup;
+        } else {
+            console.log(`当前组 (索引 ${currentSectionGroupIndex}) 未完全活跃，尝试切换到下一组。`);
+            // If current group is not active, immediately try to move to the next group/retry logic
+            setTimeout(no_ticket_change_section, 500);
+            return; // Not active, so return without clicking
+        }
+
+        if (targetSectionToClick) {
+            const existingElementIds = [];
+            for (const id of targetSectionToClick) {
+                if (findPathElementById(id)) {
+                    existingElementIds.push(id);
+                } else {
+                    console.log(`警告：ID 为 "${id}" 的元素未在页面中找到，将跳过此选项。`);
+                }
+            }
+
+            if (existingElementIds.length > 0) {
+                const randomIdToClick = getRandomElement(existingElementIds);
+                const elementToClick = findPathElementById(randomIdToClick);
+
+                if (elementToClick) {
+                    simulateClick(elementToClick);
+                    // After successfully clicking SVG element, call select_quantity2
+                    setTimeout(select_quantity2, 500); // Small delay to ensure page responds
+                } else {
+                    console.log(`未找到标题为 "${randomIdToClick}" 的元素 (意外情况)。`);
+                }
+            } else {
+                console.log(`目标组中没有可点击的元素存在于页面上。`);
+                // If no clickable elements in current group, also try to move to the next group
+                setTimeout(no_ticket_change_section, 500);
+            }
+        }
+    }
+
+    // --- Core Logic for Initial Page State Checks ---
+
+    /**
+     * Checks for the "Go to checkout" button initially.
+     * This is the highest priority check.
+     */
+    function startPaymentButtonCheck() {
+        if (checkPaymentButtonInterval) {
+            clearInterval(checkPaymentButtonInterval);
+            checkPaymentButtonInterval = null;
+        }
+        console.log('开始检查 “Go to checkout” 按钮...');
+        checkPaymentButtonInterval = setInterval(() => {
+            const goToPaymentButton = document.getElementById("goToPaymentButton");
+            if (goToPaymentButton && !goToPaymentButton.disabled) {
+                goToPaymentButton.click();
+                console.log("已点击 'Go to checkout' 按钮。脚本停止。");
+                stopAllChecks(); // Crucial: Stop all intervals
+                return; // Stop execution
+            } else {
+                // If payment button is not found/disabled, proceed to mapWrapper check
+                // This transition should be handled carefully to avoid multiple interval starts.
+                if (!checkMapWrapperInterval) { // Only start mapWrapper check if it's not already running
+                    // Add a delay before starting mapWrapper check, assuming payment button might appear late
+                    // This delay prevents starting mapWrapper check too aggressively if payment button is loading
+                    setTimeout(() => {
+                        // Re-confirm if payment button is still not found/disabled after delay
+                        const currentGoToPaymentButton = document.getElementById("goToPaymentButton");
+                        if (!currentGoToPaymentButton || currentGoToPaymentButton.disabled) {
+                            if (!checkMapWrapperInterval) { // Prevent double-start
+                                startMapWrapperCheck();
+                            }
+                        }
+                    }, 3000); // Wait 3 seconds before starting mapWrapper check
+                }
+            }
+        }, 1000); // Check every 1 second
+    }
+
+    /**
+     * Checks for the mapWrapper element.
+     * This is called if "Go to checkout" button is not found.
+     */
+    function startMapWrapperCheck() {
+        if (checkMapWrapperInterval) {
+            clearInterval(checkMapWrapperInterval);
+            checkMapWrapperInterval = null;
+        }
+        console.log('开始检查 mapWrapper...');
+        checkMapWrapperInterval = setInterval(() => {
+            const mapWrapper = document.getElementById('mapWrapper');
+            if (mapWrapper) {
+                console.log('找到 div id="mapWrapper" 了！');
+                clearInterval(checkMapWrapperInterval);
+                checkMapWrapperInterval = null;
+                // Once mapWrapper is found, proceed to handle presale/public ticket
+                input_presale_code_logic(presale_code);
+            } else {
+                console.log('等待 div id="mapWrapper" ...');
+            }
+        }, 1000); // Check every 1 second
+    }
+
+
+    // --- Script Entry Point ---
+    // Use window.onload to ensure the entire page is loaded before starting
+    window.onload = function() {
+        console.log('网页加载完毕，启动脚本。');
+        startPaymentButtonCheck(); // Start the highest priority check
+    };
+
+})();
