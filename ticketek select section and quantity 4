@@ -12,6 +12,8 @@
 // @match        https://hotshow5.ticketek.com.au/events/*/venues/*/performances/*/tickets
 // @match        https://hotshow6.ticketek.com.au/events/*/venues/*/performances/*/tickets
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=ticketek.com.au
+// @updateURL    https://raw.githubusercontent.com/bfdissfho/myticketek/refs/heads/main/ticketek%20select%20section%20and%20quantity%204
+// @downloadURL  https://raw.githubusercontent.com/bfdissfho/myticketek/refs/heads/main/ticketek%20select%20section%20and%20quantity%204
 // @grant        none
 // ==/UserScript==
 
